@@ -164,6 +164,9 @@ impl GameState for State {
     }
 }
 
+// TODO: add mode to use the map print mode from here:
+//       https://github.com/thebracket/HandsOnRust/blob/main/MoreInterestingDungeons/output_harness/src/map_builder/mod.rs#L68
+//       to test generated maps. Can be a cmd line argument/switch.
 fn main() -> BError {
     let context = BTermBuilder::new()
         .with_title("Dungeon Crawler")
