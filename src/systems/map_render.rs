@@ -10,7 +10,7 @@ pub fn map_render(
     #[resource] theme: &Box<dyn MapTheme>,
 ) {
     let mut fov = <&FieldOfView>::query().filter(component::<Player>());
-    let player_fov = fov.iter(ecs).nth(0).unwrap();
+    let player_fov = fov.iter(ecs).next().unwrap();
     let mut draw_batch = DrawBatch::new();
 
     draw_batch.target(0);

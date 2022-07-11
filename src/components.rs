@@ -60,7 +60,7 @@ impl FieldOfView {
     pub fn new(radius: i32) -> Self {
         Self {
             visible_tiles: HashSet::new(),
-            radius: radius,
+            radius,
             is_dirty: true,
         }
     }
