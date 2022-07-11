@@ -1,0 +1,1 @@
+This is a roguelike/dungeon crawler game made in Rust, based on the book [HandsOnRust](https://github.com/thebracket/HandsOnRust).
