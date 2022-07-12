@@ -1,0 +1,72 @@
+name: ContinuousIntegration
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  format:
+    name: CargoFmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+          profile: minimal
+          override: true
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  build:
+    name: ${{ matrix.build }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        build: [Linux, macOS, Win64]       
+        include:
+          - build: Linux
+            os: ubuntu-latest
+          - build: macOS
+            os: macOS-latest
+          - build: Win64
+            os: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt
+        profile: minimal
+        override: true
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        # args: --release
+        
+    - name: Tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        # args: --release
