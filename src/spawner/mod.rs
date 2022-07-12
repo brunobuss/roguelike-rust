@@ -36,10 +36,11 @@ pub fn spawn_amulet_of_yala(ecs: &mut World, pos: Point) {
 
 pub fn spawn_level(
     ecs: &mut World,
+    resources: &mut Resources,
     rng: &mut RandomNumberGenerator,
     level: usize,
     spawn_points: &[Point],
 ) {
     let template = Templates::load();
-    template.spawn_entities(ecs, rng, level, spawn_points);
+    template.spawn_entities(ecs, resources, rng, level, spawn_points);
 }
