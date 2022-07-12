@@ -1,0 +1,86 @@
+name: Release
+
+on: 
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.build }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        build: [Linux, macOS, Win64]       
+        include:
+          - build: Linux
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bin: zemeroth
+            archive: .tar.gz
+            type: application/gzip
+          - build: macOS
+            os: macOS-latest
+            target: x86_64-apple-darwin
+            bin: zemeroth
+            archive: .tar.gz
+            type: application/gzip
+          - build: Win64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: zemeroth.exe
+            archive: .zip
+            type: application/zip
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        profile: minimal
+        override: true
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --target ${{ matrix.target }}
+        
+    - name: Package
+      id: package
+      shell: bash
+      env:
+        BUILD_NAME: ${{ matrix.build }}
+        ARCHIVE_EXT: ${{ matrix.archive }}
+      run: |
+        name=dungeoncrawler
+        tag=$(git describe --tags --abbrev=0)
+        release_name="$name-$tag-$BUILD_NAME"
+        release_file="${release_name}${ARCHIVE_EXT}"
+        mkdir "$release_name"
+        cp target/${{ matrix.target }}/release/${{ matrix.bin }} "$release_name"
+        cp -r README.md resources "$release_name"
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          7z a "$release_file" "$release_name"
+        else
+          tar czvf "$release_file" "$release_name"
+        fi
+        echo "::set-output name=asset_name::$release_file"
+        echo "::set-output name=asset_path::$release_file"
+
+    - name: Upload
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: ${{ steps.package.outputs.asset_name }}
+        asset_path: ${{ steps.package.outputs.asset_path }}
+        asset_content_type: ${{ matrix.type }}
