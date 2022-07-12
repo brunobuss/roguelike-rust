@@ -1,8 +1,6 @@
 name: Release
 
-on: 
-  release:
-    types: [published]
+on: workflow_dispatch
 
 env:
   CARGO_TERM_COLOR: always
@@ -74,13 +72,3 @@ jobs:
         fi
         echo "::set-output name=asset_name::$release_file"
         echo "::set-output name=asset_path::$release_file"
-
-    - name: Upload
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_name: ${{ steps.package.outputs.asset_name }}
-        asset_path: ${{ steps.package.outputs.asset_path }}
-        asset_content_type: ${{ matrix.type }}
