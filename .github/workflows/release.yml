@@ -51,7 +51,7 @@ jobs:
         command: build
         args: --release --target ${{ matrix.target }}
 
-    - run: echo "{release_name}={dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}}" >> $GITHUB_ENV   
+    - run: echo "release_name=dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}" >> $GITHUB_ENV   
     - run: mkdir "${{ env.release_name }}"
     - run: cp ${{ matrix.bin }} "${{ env.release_name }}"
     - run: cp -r resources "${{ env.release_name }}"
