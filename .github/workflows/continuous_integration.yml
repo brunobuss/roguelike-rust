@@ -2,16 +2,16 @@ name: ContinuousIntegration
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   format:
-    name: CargoFmt
+    name: Cargo Format
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,7 @@ jobs:
   build:
     name: ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
+    needs: format
 
     strategy:
       matrix:
@@ -55,7 +56,6 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-        components: rustfmt
         profile: minimal
         override: true
 
@@ -63,10 +63,8 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        # args: --release
         
     - name: Tests
       uses: actions-rs/cargo@v1
       with:
         command: test
-        # args: --release
