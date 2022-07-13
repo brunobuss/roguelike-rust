@@ -7,6 +7,7 @@ use crate::prelude::*;
 #[write_component(Health)]
 #[read_component(Item)]
 #[read_component(Carried)]
+#[read_component(Weapon)]
 pub fn player_input(
     ecs: &mut SubWorld,
     commands: &mut CommandBuffer,
@@ -29,13 +30,38 @@ pub fn player_input(
                     .unwrap();
 
                 let mut items = <(Entity, &Item, &Point)>::query();
+                let mut new_weapon = None;
                 items
                     .iter(ecs)
                     .filter(|(_, _, &pos)| pos == player_pos)
                     .for_each(|(entity, _, _)| {
                         commands.remove_component::<Point>(*entity);
                         commands.add_component(*entity, Carried(player));
+
+                        if ecs
+                            .entry_ref(*entity)
+                            .unwrap()
+                            .get_component::<Weapon>()
+                            .is_ok()
+                        {
+                            new_weapon = Some(entity);
+                        }
                     });
+
+                // If we got a new weapon, drop the old one in the ground.
+                if let Some(new_weapon) = new_weapon {
+                    if let Some(old_weapon) = <Entity>::query()
+                        .filter(component::<Item>())
+                        .filter(component::<Carried>())
+                        .filter(component::<Weapon>())
+                        .iter(ecs)
+                        .filter(|e| *e != new_weapon)
+                        .next()
+                    {
+                        commands.remove_component::<Carried>(*old_weapon);
+                        commands.add_component(*old_weapon, player_pos.clone());
+                    }
+                }
 
                 Point::new(0, 0)
             }
