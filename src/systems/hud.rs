@@ -6,9 +6,10 @@ use crate::prelude::*;
 #[read_component(Item)]
 #[read_component(Carried)]
 #[read_component(Name)]
+#[read_component(Point)]
 pub fn hud(ecs: &SubWorld) {
-    let mut health_query = <&Health>::query().filter(component::<Player>());
-    let player_health = health_query.iter(ecs).next().unwrap();
+    let mut player_query = <(&Health, &Point)>::query().filter(component::<Player>());
+    let (player_health, player_pos) = player_query.iter(ecs).next().unwrap();
 
     let mut draw_batch = DrawBatch::new();
     draw_batch.target(2);
@@ -39,6 +40,23 @@ pub fn hud(ecs: &SubWorld) {
         format!("Dungeon Level: {}", map_level + 1),
         ColorPair::new(YELLOW, BLACK),
     );
+
+    if let Some(item_under) = <(&Name, &Point)>::query()
+        .filter(component::<Item>())
+        .iter(ecs)
+        .filter(|(_, p)| *p == player_pos)
+        .map(|(name, _)| name)
+        .next()
+    {
+        draw_batch.print_color_centered(
+            2,
+            format!(
+                " You see a {} near your feet (press 'g' to grab).",
+                item_under.0
+            ),
+            ColorPair::new(GREEN, BLACK),
+        );
+    }
 
     let mut item_query = <(&Item, &Name, &Carried)>::query();
     let mut y = 3;
