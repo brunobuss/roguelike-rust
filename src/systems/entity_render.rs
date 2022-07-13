@@ -6,7 +6,6 @@ use crate::prelude::*;
 #[read_component(FieldOfView)]
 #[read_component(Player)]
 pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
-    let mut renderables = <(&Point, &Render)>::query();
     let mut player = <(&FieldOfView, &Point, &Render)>::query().filter(component::<Player>());
     let (player_fov, player_pos, player_render) = player.iter(ecs).next().unwrap();
 
@@ -14,8 +13,18 @@ pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
     draw_batch.target(1);
     let offset = Point::new(camera.left_x, camera.top_y);
 
-    // Render everything but the player first.
-    renderables
+    // Only Items first
+    let mut items = <(&Point, &Render)>::query().filter(component::<Item>());
+    items
+        .iter(ecs)
+        .filter(|(pos, _)| player_fov.visible_tiles.contains(pos) && *pos != player_pos)
+        .for_each(|(pos, render)| {
+            draw_batch.set(*pos - offset, render.color, render.glyph);
+        });
+
+    // Then monsters/enemies
+    let mut enemies = <(&Point, &Render)>::query().filter(component::<Enemy>());
+    enemies
         .iter(ecs)
         .filter(|(pos, _)| player_fov.visible_tiles.contains(pos) && *pos != player_pos)
         .for_each(|(pos, render)| {
