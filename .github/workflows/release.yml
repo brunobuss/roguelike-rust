@@ -17,21 +17,15 @@ jobs:
           - build: Linux
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            bin: zemeroth
-            archive: .tar.gz
-            type: application/gzip
+            bin: target/x86_64-unknown-linux-gnu/release/dungeoncrawl
           - build: macOS
             os: macOS-latest
             target: x86_64-apple-darwin
-            bin: zemeroth
-            archive: .tar.gz
-            type: application/gzip
+            bin: target/x86_64-apple-darwin/release/dungeoncrawl
           - build: Win64
             os: windows-latest
             target: x86_64-pc-windows-msvc
-            bin: zemeroth.exe
-            archive: .zip
-            type: application/zip
+            bin: target/x86_64-pc-windows-msvc/release/dungeoncrawl.exe
 
     steps:
     - name: Checkout
@@ -50,25 +44,26 @@ jobs:
       with:
         command: build
         args: --release --target ${{ matrix.target }}
-        
-    - name: Package
-      id: package
-      shell: bash
-      env:
-        BUILD_NAME: ${{ matrix.build }}
-        ARCHIVE_EXT: ${{ matrix.archive }}
-      run: |
-        name=dungeoncrawler
-        tag=$(git describe --tags --abbrev=0)
-        release_name="$name-$tag-$BUILD_NAME"
-        release_file="${release_name}${ARCHIVE_EXT}"
-        mkdir "$release_name"
-        cp target/${{ matrix.target }}/release/${{ matrix.bin }} "$release_name"
-        cp -r README.md resources "$release_name"
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          7z a "$release_file" "$release_name"
-        else
-          tar czvf "$release_file" "$release_name"
-        fi
-        echo "::set-output name=asset_name::$release_file"
-        echo "::set-output name=asset_path::$release_file"
+
+    - run: echo "{release_tag}={$(git describe --tags --abbrev=0)}" >> $GITHUB_ENV
+    - run: echo "{release_name}={dungeoncrawl-${{ env.tag }}-${{ env.build }}}" >> $GITHUB_ENV
+    
+    - run: mkdir ${{ env.release_name }}
+    - run: cp ${{ matrix.bin }} "${{ env.release_name }}"
+    - run: cp -r resources "${{ env.release_name }}"
+    - run: cp README.md "${{ env.release_name }}"
+
+    - name: Compress to .zip
+      if: ${{ matrix.build == "Win64" }}
+      run: 7z a "${{ env.release_name }}.zip" "${{ env.release_name }}"
+
+    - name: Compress to .tar.gz
+      if: ${{ matrix.build != "Win64" }}
+      run: tar czvf "${{ env.release_name }}.tar.gz" "${{ env.release_name }}"
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.build }}
+        path: |
+          dungeoncrawl*.zip
+          dungeoncrawl*.tar.gz
