@@ -33,6 +33,9 @@ jobs:
             target: x86_64-pc-windows-msvc
             bin: target/x86_64-pc-windows-msvc/release/dungeoncrawl.exe
 
+    env:
+      RELEASE_NAME: dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -51,23 +54,22 @@ jobs:
         command: build
         args: --release --target ${{ matrix.target }}
 
-    - run: echo "release_name=dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}" >> $GITHUB_ENV   
-    - run: mkdir "${{ env.release_name }}"
-    - run: cp ${{ matrix.bin }} "${{ env.release_name }}"
-    - run: cp -r resources "${{ env.release_name }}"
-    - run: cp README.md "${{ env.release_name }}"
+    - run: mkdir "$RELEASE_NAME"
+    - run: cp ${{ matrix.bin }} "$RELEASE_NAME"
+    - run: cp -r resources "$RELEASE_NAME"
+    - run: cp README.md "$RELEASE_NAME"
 
     - name: Compress to .zip
       if: ${{ matrix.build == 'Win64' }}
-      run: 7z a "${{ env.release_name }}.zip" "${{ env.release_name }}"
+      run: 7z a "${{ env.RELEASE_NAME }}.zip" "$RELEASE_NAME"
 
     - name: Compress to .tar.gz
       if: ${{ matrix.build != 'Win64' }}
-      run: tar czvf "${{ env.release_name }}.tar.gz" "${{ env.release_name }}"
+      run: tar czvf "${{ env.RELEASE_NAME }}.tar.gz" "$RELEASE_NAME"
 
     - uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.build }}
+        name: dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}
         path: |
           dungeoncrawl*.zip
           dungeoncrawl*.tar.gz
