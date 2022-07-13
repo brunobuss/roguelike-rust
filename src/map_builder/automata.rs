@@ -3,19 +3,26 @@ use crate::prelude::*;
 
 pub struct CellularAutomataArchitect {}
 
-// TODO: Make sure the boundaries/borders of the map are Walls.
 // TODO: Don't spawn monsters in areas that are not reachable by the player.
 //       Maybe conside turning those areas into Walls too?
 impl CellularAutomataArchitect {
     fn random_noise_map(&mut self, rng: &mut RandomNumberGenerator, map: &mut Map) {
-        map.tiles.iter_mut().for_each(|t| {
-            let roll = rng.range(0, 100);
-            *t = if roll > 55 {
-                TileType::Floor
+        let mut new_tiles = map.tiles.clone();
+        new_tiles.iter_mut().enumerate().for_each(|(idx, t)| {
+            let pt = map.index_to_point2d(idx);
+            if pt.x == 0 || pt.x == SCREEN_WIDTH || pt.y == 0 || pt.y == SCREEN_HEIGHT - 1 {
+                // Always make the borders be Walls.
+                *t = TileType::Wall
             } else {
-                TileType::Wall
-            };
+                let roll = rng.range(0, 100);
+                *t = if roll > 55 {
+                    TileType::Floor
+                } else {
+                    TileType::Wall
+                };
+            }
         });
+        map.tiles = new_tiles;
     }
 
     /// Count number of adjacent (incl diagonals) Wall tiles.

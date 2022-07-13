@@ -14,16 +14,22 @@ impl DrunkardWalkArchitect {
 
         loop {
             let drunk_idx = map.point2d_to_index(drunkard_pos);
-            map.tiles[drunk_idx] = TileType::Floor;
+            // Break if arrived in a border (or is fully out of bounds)
+            if !map.in_bounds(drunkard_pos)
+                || drunkard_pos.x == 0
+                || drunkard_pos.x == SCREEN_WIDTH - 1
+                || drunkard_pos.y == 0
+                || drunkard_pos.y == SCREEN_HEIGHT - 1
+            {
+                break;
+            }
 
+            map.tiles[drunk_idx] = TileType::Floor;
             match rng.range(0, 4) {
                 0 => drunkard_pos.x -= 1,
                 1 => drunkard_pos.x += 1,
                 2 => drunkard_pos.y -= 1,
                 _ => drunkard_pos.y += 1,
-            }
-            if !map.in_bounds(drunkard_pos) {
-                break;
             }
 
             distance_staggered += 1;
@@ -58,7 +64,10 @@ impl MapArchitect for DrunkardWalkArchitect {
             < DESIRED_FLOOR
         {
             self.drunkard(
-                &Point::new(rng.range(0, SCREEN_WIDTH), rng.range(0, SCREEN_HEIGHT)),
+                &Point::new(
+                    rng.range(1, SCREEN_WIDTH - 1),
+                    rng.range(1, SCREEN_HEIGHT - 1),
+                ),
                 rng,
                 &mut mb.map,
             );
