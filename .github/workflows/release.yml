@@ -54,11 +54,11 @@ jobs:
     - run: cp README.md "${{ env.release_name }}"
 
     - name: Compress to .zip
-      if: ${{ matrix.build == "Win64" }}
+      if: ${{ matrix.build == 'Win64' }}
       run: 7z a "${{ env.release_name }}.zip" "${{ env.release_name }}"
 
     - name: Compress to .tar.gz
-      if: ${{ matrix.build != "Win64" }}
+      if: ${{ matrix.build != 'Win64' }}
       run: tar czvf "${{ env.release_name }}.tar.gz" "${{ env.release_name }}"
 
     - uses: actions/upload-artifact@v3
