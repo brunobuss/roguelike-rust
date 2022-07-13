@@ -77,11 +77,12 @@ pub fn player_input(
             _ => Point::new(0, 0),
         };
 
-        let (player_entity, destination) = players
+        let (player_entity, player_pos) = players
             .iter(ecs)
-            .map(|(entity, pos)| (*entity, *pos + delta))
+            .map(|(entity, pos)| (*entity, *pos))
             .next()
             .unwrap();
+        let destination = player_pos + delta;
 
         let mut enemies = <(Entity, &Point)>::query().filter(component::<Enemy>());
         if delta.x != 0 || delta.y != 0 {
@@ -105,6 +106,7 @@ pub fn player_input(
                     (),
                     WantsToMove {
                         entity: player_entity,
+                        from: player_pos,
                         destination,
                     },
                 ));

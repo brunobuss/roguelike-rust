@@ -25,6 +25,7 @@ pub struct ChasingPlayer;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WantsToMove {
     pub entity: Entity,
+    pub from: Point,
     pub destination: Point,
 }
 
