@@ -10,7 +10,7 @@ impl CellularAutomataArchitect {
         let mut new_tiles = map.tiles.clone();
         new_tiles.iter_mut().enumerate().for_each(|(idx, t)| {
             let pt = map.index_to_point2d(idx);
-            if pt.x == 0 || pt.x == SCREEN_WIDTH || pt.y == 0 || pt.y == SCREEN_HEIGHT - 1 {
+            if pt.x == 0 || pt.x == SCREEN_WIDTH - 1 || pt.y == 0 || pt.y == SCREEN_HEIGHT - 1 {
                 // Always make the borders be Walls.
                 *t = TileType::Wall
             } else {
