@@ -1,6 +1,12 @@
 name: Release
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      versiontag:
+        description: "Version tag to be used (e.g. vX.Y.Z)"
+        required: true
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -45,10 +51,8 @@ jobs:
         command: build
         args: --release --target ${{ matrix.target }}
 
-    - run: echo "{release_tag}={$(git describe --tags --abbrev=0)}" >> $GITHUB_ENV
-    - run: echo "{release_name}={dungeoncrawl-${{ env.tag }}-${{ env.build }}}" >> $GITHUB_ENV
-    
-    - run: mkdir ${{ env.release_name }}
+    - run: echo "{release_name}={dungeoncrawl-${{ inputs.versiontag }}-${{ matrix.build }}}" >> $GITHUB_ENV   
+    - run: mkdir "${{ env.release_name }}"
     - run: cp ${{ matrix.bin }} "${{ env.release_name }}"
     - run: cp -r resources "${{ env.release_name }}"
     - run: cp README.md "${{ env.release_name }}"
