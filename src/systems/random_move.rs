@@ -45,6 +45,7 @@ pub fn random_move(ecs: &mut SubWorld, commands: &mut CommandBuffer) {
                 (),
                 WantsToMove {
                     entity: *entity,
+                    from: *pos,
                     destination,
                 },
             ));

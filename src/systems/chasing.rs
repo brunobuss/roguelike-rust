@@ -56,6 +56,7 @@ pub fn chasing(ecs: &SubWorld, commands: &mut CommandBuffer, #[resource] map: &M
                     (),
                     WantsToMove {
                         entity: *entity,
+                        from: *pos,
                         destination,
                     },
                 ));
