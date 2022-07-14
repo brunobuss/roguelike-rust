@@ -106,4 +106,116 @@ impl Templates {
     }
 }
 
-impl Template {}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn build_test_item(frequency: i32) -> Template {
+        let mut levels = HashSet::new();
+        levels.insert(2 as usize);
+        levels.insert(3 as usize);
+
+        Template {
+            entity_type: EntityType::Item,
+            levels,
+            frequency,
+            name: "Test Item".to_string(),
+            glyph: '!',
+            provides: None,
+            hp: None,
+            base_damage: None,
+        }
+    }
+
+    fn build_test_enemy(frequency: i32) -> Template {
+        let mut levels = HashSet::new();
+        levels.insert(2 as usize);
+        levels.insert(3 as usize);
+
+        Template {
+            entity_type: EntityType::Enemy,
+            levels,
+            frequency,
+            name: "Test Enemy".to_string(),
+            glyph: 'O',
+            provides: None,
+            hp: Some(5),
+            base_damage: Some(2),
+        }
+    }
+
+    #[test]
+    fn spawn_nothing() {
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+
+        let templates = Templates {
+            entities: vec![build_test_item(1)],
+        };
+        let spawn = [];
+
+        templates.spawn_entities(&mut ecs, &mut resources, &mut rng, 2 as usize, &spawn);
+        assert_eq!(ecs.len(), 0);
+    }
+
+    #[test]
+    fn spawn_one_entity_wrong_level() {
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+
+        let templates = Templates {
+            entities: vec![build_test_item(1)],
+        };
+        let spawn = [Point::new(10, 10)];
+
+        templates.spawn_entities(&mut ecs, &mut resources, &mut rng, 1 as usize, &spawn);
+        assert_eq!(ecs.len(), 0);
+    }
+
+    #[test]
+    fn spawn_one_entity_no_frequency() {
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+
+        let templates = Templates {
+            entities: vec![build_test_item(0)],
+        };
+        let spawn = [Point::new(10, 10)];
+
+        templates.spawn_entities(&mut ecs, &mut resources, &mut rng, 2 as usize, &spawn);
+        assert_eq!(ecs.len(), 0);
+    }
+
+    #[test]
+    fn spawn_one_consumable() {
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+
+        let templates = Templates {
+            entities: vec![build_test_item(1)],
+        };
+        let spawn = [Point::new(10, 10)];
+
+        templates.spawn_entities(&mut ecs, &mut resources, &mut rng, 2 as usize, &spawn);
+        assert_eq!(ecs.len(), 1);
+    }
+
+    #[test]
+    fn spawn_one_enemy() {
+        let mut ecs = World::default();
+        let mut resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+
+        let templates = Templates {
+            entities: vec![build_test_enemy(1)],
+        };
+        let spawn = [Point::new(10, 10)];
+
+        templates.spawn_entities(&mut ecs, &mut resources, &mut rng, 2 as usize, &spawn);
+        assert_eq!(ecs.len(), 1);
+    }
+}
