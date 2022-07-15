@@ -93,3 +93,32 @@ impl MapArchitect for RoomsArchitect {
         mb
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn map_properties() {
+        let mut rng = RandomNumberGenerator::new();
+
+        let mut architect = RoomsArchitect {};
+        let mb = architect.new(&mut rng);
+
+        // Check that both player start and amulet/exit points are floors.
+        let player_start_idx = mb.map.point2d_to_index(mb.player_start);
+        assert_eq!(mb.map.tiles[player_start_idx], TileType::Floor);
+        let exit_idx = mb.map.point2d_to_index(mb.amulet_start);
+        assert_eq!(mb.map.tiles[exit_idx], TileType::Floor);
+
+        // Check that there is a path from player to exit.
+        let dmap = DijkstraMap::new(
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+            &[player_start_idx],
+            &mb.map,
+            1024.0,
+        );
+        assert_ne!(dmap.map[exit_idx], f32::MAX);
+    }
+}
